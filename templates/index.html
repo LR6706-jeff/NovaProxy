@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NovaProxy 控制台</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #EAE3D2;
+            --card-bg: #F9F5EB;
+            --border: #D1CDC0;
+            --primary: #607EAA;
+            --text-main: #3C4048;
+            --text-dim: #6B728E;
+            --input-bg: #FFFFFF;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Noto Sans SC', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        header {
+            padding: 24px 48px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .endpoint {
+            font-family: 'JetBrains Mono';
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+
+        main {
+            flex: 1;
+            padding: 0 48px 48px 48px;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 32px;
+            overflow: hidden;
+        }
+
+        .section {
+            background: var(--card-bg);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
+        }
+
+        .section-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-title {
+            font-weight: 700;
+            font-size: 17px;
+        }
+
+        .content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-dim);
+            display: block;
+        }
+
+        textarea {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+            font-family: 'JetBrains Mono';
+            font-size: 14px;
+            resize: none;
+            color: var(--text-main);
+            background: var(--input-bg);
+            box-sizing: border-box;
+            flex: 1;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        #log-list {
+            font-family: 'JetBrains Mono';
+            font-size: 12px;
+        }
+
+        .log-item {
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed var(--border);
+            color: var(--text-main);
+        }
+
+        .log-time {
+            color: var(--text-dim);
+            font-size: 11px;
+            margin-right: 10px;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="logo">NovaProxy</div>
+        <div class="endpoint">API: http://localhost:3001/v1/messages</div>
+    </header>
+
+    <main>
+        <div class="section">
+            <div class="section-header">
+                <span class="section-title">设置</span>
+                <button class="btn" onclick="saveConfig()">保存</button>
+            </div>
+            <div class="content">
+                <label>NVIDIA API 密钥</label>
+                <textarea id="keys-input" placeholder="请在此输入您的 nvapi-xxx..."></textarea>
+                <div style="margin-top: 20px;">
+                    <label>访问验证密钥 (选填)</label>
+                    <input type="password" id="server-key-input"
+                        style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px;"
+                        placeholder="API 访问验证码">
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <span class="section-title">运行状态</span>
+            </div>
+            <div class="content" id="log-container">
+                <div id="log-list">
+                    <div class="log-item">NovaProxy 已就绪。</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        async function loadConfig() {
+            try {
+                const resp = await fetch('/status');
+                const data = await resp.json();
+                document.getElementById('keys-input').value = data.keys.join('\n');
+                document.getElementById('server-key-input').value = data.server_api_key || '';
+            } catch (e) { }
+        }
+
+        async function saveConfig() {
+            const keys = document.getElementById('keys-input').value.split('\n').map(k => k.trim()).filter(k => k);
+            const serverKey = document.getElementById('server-key-input').value;
+            const resp = await fetch('/update_config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    nvidia_keys: keys,
+                    server_api_key: serverKey
+                })
+            });
+            if (resp.ok) {
+                addLog("设置已保存。");
+                alert("已成功更新设置！");
+            }
+        }
+
+        function addLog(msg) {
+            const list = document.getElementById('log-list');
+            const item = document.createElement('div');
+            item.className = 'log-item';
+            const time = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+            item.innerHTML = `<span class="log-time">[${time}]</span> ${msg}`;
+            list.prepend(item);
+        }
+        loadConfig();
+    </script>
+</body>
+
+</html>
