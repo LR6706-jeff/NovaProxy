@@ -4,27 +4,36 @@ from pydantic import BaseModel
 from typing import List, Dict, Optional
 
 class Config(BaseModel):
-    # 默认公开配置，不含任何私有信息
     nvidia_url: str = "https://integrate.api.nvidia.com/v1/chat/completions"
     nvidia_keys: List[str] = []
-    model_mapping: Dict[str, str] = {}
+    model_mapping: Dict[str, str] = {
+        "claude-3-5-sonnet-latest": "z-ai/glm-4-9b-chat",
+        "claude-3-5-sonnet-20241022": "z-ai/glm-4-9b-chat",
+        "claude-3-5-sonnet-20240620": "z-ai/glm-4-9b-chat",
+        "claude-3-opus-latest": "z-ai/glm-4-9b-chat",
+        "claude-3-opus-20240229": "z-ai/glm-4-9b-chat",
+        "claude-3-5-haiku-latest": "z-ai/glm-4-9b-chat",
+        "claude-3-5-haiku-20241022": "z-ai/glm-4-9b-chat",
+        "claude-3-haiku-20240307": "z-ai/glm-4-9b-chat"
+    }
     default_model: str = "z-ai/glm-4-9b-chat"
-    server_api_key: Optional[str] = ""
+    server_api_key: Optional[str] = None
+    port: int = 3001
 
-def load_config(path: str = "config.json") -> Config:
-    # 如果文件不存在，直接返回一个空白的初始配置对象
-    if not os.path.exists(path):
-        return Config()
-    
-    try:
-        with open(path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            # 使用 Pydantic 进行校验加载
-            return Config(**data)
-    except Exception as e:
-        # 如果文件损坏或解析失败，也返回空白配置，确保程序不崩溃
-        print(f"[*] 注意: 配置文件加载失败 ({e}), 将使用默认配置运行。")
-        return Config()
+CONFIG_FILE = "config.json"
 
-# 初始化全局配置对象
+def load_config() -> Config:
+    if os.path.exists(CONFIG_FILE):
+        try:
+            with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                return Config(**data)
+        except Exception as e:
+            print(f"Error loading config: {e}")
+    return Config()
+
+def save_config(config: Config):
+    with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+        json.dump(config.dict(), f, indent=2, ensure_ascii=False)
+
 CONFIG = load_config()

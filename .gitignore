@@ -1,62 +1,19 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
-
-# C extensions
-*.so
-
-# Distribution / packaging
+# Build
 build/
-develop-eggs/
 dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
-
-# PyInstaller
-#  Usually these files are written by a python script, before PyInstaller builds the exe, so may as well filter them
-*.manifest
 *.spec
+__pycache__/
+*.pyc
+.deps_installed
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
+# IDE
+.vscode/
+.idea/
 
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.stats
-.hypothesis/
-.pytest_cache/
-cover/
+# Temp
+*.log
+*.tmp
 
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
-# Project-specific
-config.json
+# 不上传打包的 exe 和 zip（用 Release 发布）
 *.exe
+*.zip

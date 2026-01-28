@@ -4,234 +4,366 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NovaProxy 控制台</title>
+    <title>NovaProxy Control Center</title>
     <link
-        href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Fira+Code:wght@400;500&display=swap"
         rel="stylesheet">
     <style>
         :root {
-            --bg: #EAE3D2;
-            --card-bg: #F9F5EB;
-            --border: #D1CDC0;
-            --primary: #607EAA;
-            --text-main: #3C4048;
-            --text-dim: #6B728E;
-            --input-bg: #FFFFFF;
+            --primary: #00f2fe;
+            --secondary: #4facfe;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text: #f1f5f9;
+            --accent: #10b981;
+            --danger: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
         }
 
         body {
-            background-color: var(--bg);
-            color: var(--text-main);
-            font-family: 'Noto Sans SC', sans-serif;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
+            background: radial-gradient(circle at top left, #1e293b, #0f172a);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
         }
 
         header {
-            padding: 24px 48px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid var(--border);
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease-out;
         }
 
         .logo {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--text-main);
-        }
-
-        .endpoint {
-            font-family: 'JetBrains Mono';
-            font-size: 13px;
-            color: var(--text-dim);
-        }
-
-        main {
-            flex: 1;
-            padding: 0 48px 48px 48px;
-            display: grid;
-            grid-template-columns: 350px 1fr;
-            gap: 32px;
-            overflow: hidden;
-        }
-
-        .section {
-            background: var(--card-bg);
-            border-radius: 16px;
+            font-size: 2rem;
+            font-weight: 600;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             display: flex;
-            flex-direction: column;
-            border: 1px solid var(--border);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
-        }
-
-        .section-header {
-            padding: 20px 24px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
             align-items: center;
+            gap: 0.5rem;
         }
 
-        .section-title {
-            font-weight: 700;
-            font-size: 17px;
-        }
-
-        .content {
-            flex: 1;
-            padding: 24px;
-            overflow-y: auto;
+        .status-badge {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent);
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.9rem;
+            border: 1px solid var(--accent);
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent);
+            animation: pulse 2s infinite;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--secondary);
+        }
+
+        .stat-val {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .config-item {
+            margin-bottom: 1.5rem;
         }
 
         label {
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: var(--text-dim);
             display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: #94a3b8;
         }
 
-        textarea {
+        input,
+        textarea,
+        select {
             width: 100%;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 14px;
-            font-family: 'JetBrains Mono';
-            font-size: 14px;
-            resize: none;
-            color: var(--text-main);
-            background: var(--input-bg);
-            box-sizing: border-box;
-            flex: 1;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
         }
 
-        textarea:focus {
-            outline: none;
+        input:focus {
             border-color: var(--primary);
         }
 
-        #log-list {
-            font-family: 'JetBrains Mono';
-            font-size: 12px;
-        }
-
-        .log-item {
-            margin-bottom: 10px;
-            padding-bottom: 8px;
-            border-bottom: 1px dashed var(--border);
-            color: var(--text-main);
-        }
-
-        .log-time {
-            color: var(--text-dim);
-            font-size: 11px;
-            margin-right: 10px;
-        }
-
         .btn {
-            background: var(--primary);
-            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #0f172a;
             border: none;
-            padding: 10px 24px;
-            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: opacity 0.3s, transform 0.2s;
+            width: 100%;
+            margin-top: 1rem;
         }
 
         .btn:hover {
-            filter: brightness(1.1);
-            transform: translateY(-1px);
+            opacity: 0.9;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .log-container {
+            background: #000;
+            border-radius: 1rem;
+            padding: 1rem;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #334155;
+            color: #cbd5e1;
+        }
+
+        .log-entry {
+            margin-bottom: 0.5rem;
+            border-left: 2px solid var(--secondary);
+            padding-left: 0.5rem;
+        }
+
+        .log-time {
+            color: #64748b;
+        }
+
+        .log-method {
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .log-path {
+            color: var(--accent);
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.5);
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         ::-webkit-scrollbar {
             width: 6px;
         }
 
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
         ::-webkit-scrollbar-thumb {
-            background: var(--border);
+            background: #334155;
             border-radius: 10px;
         }
     </style>
 </head>
 
 <body>
-    <header>
-        <div class="logo">NovaProxy</div>
-        <div class="endpoint">API: http://localhost:3001/v1/messages</div>
-    </header>
-
-    <main>
-        <div class="section">
-            <div class="section-header">
-                <span class="section-title">设置</span>
-                <button class="btn" onclick="saveConfig()">保存</button>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <span>✨</span> NovaProxy
             </div>
-            <div class="content">
-                <label>NVIDIA API 密钥</label>
-                <textarea id="keys-input" placeholder="请在此输入您的 nvapi-xxx..."></textarea>
-                <div style="margin-top: 20px;">
-                    <label>访问验证密钥 (选填)</label>
-                    <input type="password" id="server-key-input"
-                        style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px;"
-                        placeholder="API 访问验证码">
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                服务运行中 :3001
+            </div>
+        </header>
+
+        <div class="grid">
+            <!-- Stats -->
+            <div class="card">
+                <div class="card-title">📊 实时统计</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <div class="stat-val" id="req-count">0</div>
+                        <div class="stat-label">总请求数</div>
+                    </div>
+                    <div>
+                        <div class="stat-val" id="token-count">0</div>
+                        <div class="stat-label">Tokens 消耗</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuration -->
+            <div class="card" style="grid-row: span 2;">
+                <div class="card-title">⚙️ 配置管理</div>
+                <div class="config-item">
+                    <label>访问密码 (Server API Key, 留空则不加密)</label>
+                    <input type="text" id="config-server-key" placeholder="例如: 123456">
+                </div>
+                <div class="config-item">
+                    <label>NVIDIA API Keys (每行一个)</label>
+                    <textarea id="config-keys" rows="5"></textarea>
+                </div>
+                <div class="config-item">
+                    <label>模型映射 (JSON 格式)</label>
+                    <textarea id="config-mapping" rows="8"></textarea>
+                </div>
+                <button class="btn" onclick="saveConfig()">保存配置并重启</button>
+            </div>
+
+            <!-- System Info -->
+            <div class="card">
+                <div class="card-title">ℹ️ 系统信息</div>
+                <div id="sys-info">
+                    <p class="stat-label">运行环境: <span style="color:white">Python 3.13</span></p>
+                    <p class="stat-label">内网地址: <span style="color:white" id="local-ip">加载中...</span></p>
+                    <p class="stat-label">模型后端: <span style="color:white">NVIDIA NIM</span></p>
+                </div>
+            </div>
+
+            <!-- Logs -->
+            <div class="card" style="grid-column: span 2;">
+                <div class="card-title">📜 实时活跃日志</div>
+                <div class="log-container" id="log-box">
+                    <div class="log-entry"><span class="log-time">[17:30:05]</span> 系统就绪，等待请求...</div>
                 </div>
             </div>
         </div>
-
-        <div class="section">
-            <div class="section-header">
-                <span class="section-title">运行状态</span>
-            </div>
-            <div class="content" id="log-container">
-                <div id="log-list">
-                    <div class="log-item">NovaProxy 已就绪。</div>
-                </div>
-            </div>
-        </div>
-    </main>
+    </div>
 
     <script>
-        async function loadConfig() {
+        async function fetchStats() {
             try {
-                const resp = await fetch('/status');
-                const data = await resp.json();
-                document.getElementById('keys-input').value = data.keys.join('\n');
-                document.getElementById('server-key-input').value = data.server_api_key || '';
+                const res = await fetch('/api/stats');
+                const data = await res.json();
+                document.getElementById('req-count').innerText = data.requests;
+                document.getElementById('token-count').innerText = data.tokens;
+                document.getElementById('local-ip').innerText = data.ip || 'localhost';
+
+                // Update logs
+                const logBox = document.getElementById('log-box');
+                if (data.logs && data.logs.length > 0) {
+                    data.logs.forEach(log => {
+                        const div = document.createElement('div');
+                        div.className = 'log-entry';
+                        div.innerHTML = `<span class="log-time">[${log.time}]</span> <span class="log-method">${log.method}</span> <span class="log-path">${log.path}</span> ${log.status}`;
+                        logBox.appendChild(div);
+                    });
+                    logBox.scrollTop = logBox.scrollHeight;
+                }
             } catch (e) { }
         }
 
+        async function loadConfig() {
+            const res = await fetch('/api/config');
+            const data = await res.json();
+            document.getElementById('config-server-key').value = data.server_api_key || '';
+            document.getElementById('config-keys').value = data.nvidia_keys.join('\n');
+            document.getElementById('config-mapping').value = JSON.stringify(data.model_mapping, null, 2);
+        }
+
         async function saveConfig() {
-            const keys = document.getElementById('keys-input').value.split('\n').map(k => k.trim()).filter(k => k);
-            const serverKey = document.getElementById('server-key-input').value;
-            const resp = await fetch('/update_config', {
+            const serverKey = document.getElementById('config-server-key').value.trim() || null;
+            const keys = document.getElementById('config-keys').value.split('\n').filter(k => k.trim());
+            const mapping = JSON.parse(document.getElementById('config-mapping').value);
+
+            const res = await fetch('/api/config', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    server_api_key: serverKey,
                     nvidia_keys: keys,
-                    server_api_key: serverKey
+                    model_mapping: mapping
                 })
             });
-            if (resp.ok) {
-                addLog("设置已保存。");
-                alert("已成功更新设置！");
+
+            if (res.ok) {
+                alert('配置保存成功！');
+                location.reload();
             }
         }
 
-        function addLog(msg) {
-            const list = document.getElementById('log-list');
-            const item = document.createElement('div');
-            item.className = 'log-item';
-            const time = new Date().toLocaleTimeString('zh-CN', { hour12: false });
-            item.innerHTML = `<span class="log-time">[${time}]</span> ${msg}`;
-            list.prepend(item);
-        }
+        setInterval(fetchStats, 2000);
         loadConfig();
     </script>
 </body>
