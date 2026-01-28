@@ -52,6 +52,7 @@
             font-weight: 600;
             background: linear-gradient(to right, var(--primary), var(--secondary));
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
             display: flex;
             align-items: center;
@@ -258,10 +259,10 @@
         </header>
 
         <div class="grid">
-            <!-- Stats -->
+            <!-- Row 1: Stats + System Info -->
             <div class="card">
                 <div class="card-title">📊 实时统计</div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; text-align: center;">
                     <div>
                         <div class="stat-val" id="req-count">0</div>
                         <div class="stat-label">总请求数</div>
@@ -273,35 +274,32 @@
                 </div>
             </div>
 
-            <!-- Configuration -->
-            <div class="card" style="grid-row: span 2;">
-                <div class="card-title">⚙️ 配置管理</div>
-                <div class="config-item">
-                    <label>访问密码 (Server API Key, 留空则不加密)</label>
-                    <input type="text" id="config-server-key" placeholder="例如: 123456">
-                </div>
-                <div class="config-item">
-                    <label>NVIDIA API Keys (每行一个)</label>
-                    <textarea id="config-keys" rows="5"></textarea>
-                </div>
-                <div class="config-item">
-                    <label>模型映射 (JSON 格式)</label>
-                    <textarea id="config-mapping" rows="8"></textarea>
-                </div>
-                <button class="btn" onclick="saveConfig()">保存配置并重启</button>
-            </div>
-
-            <!-- System Info -->
             <div class="card">
                 <div class="card-title">ℹ️ 系统信息</div>
-                <div id="sys-info">
+                <div id="sys-info" style="display: flex; flex-direction: column; gap: 0.75rem;">
                     <p class="stat-label">运行环境: <span style="color:white">Python 3.13</span></p>
                     <p class="stat-label">内网地址: <span style="color:white" id="local-ip">加载中...</span></p>
                     <p class="stat-label">模型后端: <span style="color:white">NVIDIA NIM</span></p>
                 </div>
             </div>
 
-            <!-- Logs -->
+            <!-- Row 2: Configuration -->
+            <div class="card" style="grid-column: span 2;">
+                <div class="card-title">⚙️ 配置管理</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start;">
+                    <div class="config-item" style="margin-bottom: 0;">
+                        <label>访问密码 (Server API Key, 留空则不加密)</label>
+                        <input type="text" id="config-server-key" placeholder="例如: 123456">
+                    </div>
+                    <div class="config-item" style="margin-bottom: 0;">
+                        <label>NVIDIA API Keys (每行一个)</label>
+                        <textarea id="config-keys" rows="4"></textarea>
+                    </div>
+                </div>
+                <button class="btn" onclick="saveConfig()" style="margin-top: 1.5rem;">保存配置并重启</button>
+            </div>
+
+            <!-- Row 3: Logs -->
             <div class="card" style="grid-column: span 2;">
                 <div class="card-title">📜 实时活跃日志</div>
                 <div class="log-container" id="log-box">
@@ -339,13 +337,11 @@
             const data = await res.json();
             document.getElementById('config-server-key').value = data.server_api_key || '';
             document.getElementById('config-keys').value = data.nvidia_keys.join('\n');
-            document.getElementById('config-mapping').value = JSON.stringify(data.model_mapping, null, 2);
         }
 
         async function saveConfig() {
             const serverKey = document.getElementById('config-server-key').value.trim() || null;
             const keys = document.getElementById('config-keys').value.split('\n').filter(k => k.trim());
-            const mapping = JSON.parse(document.getElementById('config-mapping').value);
 
             const res = await fetch('/api/config', {
                 method: 'POST',
@@ -353,7 +349,7 @@
                 body: JSON.stringify({
                     server_api_key: serverKey,
                     nvidia_keys: keys,
-                    model_mapping: mapping
+                    model_mapping: {}
                 })
             });
 

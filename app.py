@@ -213,5 +213,29 @@ def open_browser():
 if __name__ == "__main__":
     import uvicorn
     import threading
-    threading.Thread(target=open_browser, daemon=True).start()
-    uvicorn.run(app, host="0.0.0.0", port=CONFIG.port, log_level="warning")
+
+    # 修复在某些 Windows 环境下 sys.stdout 为 None 导致 uvicorn 崩溃的问题
+    if sys.stdout is None:
+        class DummyStream:
+            def write(self, data): pass
+            def flush(self): pass
+            def isatty(self): return False
+        sys.stdout = DummyStream()
+    if sys.stderr is None:
+        sys.stderr = sys.stdout
+
+    try:
+        threading.Thread(target=open_browser, daemon=True).start()
+        # 禁用颜色输出，彻底避免 isatty 检查导致的崩溃
+        uvicorn.run(app, host="0.0.0.0", port=CONFIG.port, log_level="warning", use_colors=False)
+    except OSError as e:
+        if "10048" in str(e) or "address already in use" in str(e).lower():
+            print(f"\n❌ 错误：端口 {CONFIG.port} 已被占用！")
+            print("请先关闭其他正在运行的 NovaProxy 实例，或使用端口清理工具。")
+        else:
+            print(f"\n❌ 启动失败：{e}")
+        input("\n按回车键退出...")
+    except Exception as e:
+        print(f"\n❌ 发生错误：{e}")
+        input("\n按回车键退出...")
+

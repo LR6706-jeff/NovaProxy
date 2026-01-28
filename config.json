@@ -1,7 +1,10 @@
 {
-    "nvidia_url": "https://integrate.api.nvidia.com/v1/chat/completions",
-    "nvidia_keys": [],
-    "model_mapping": {},
-    "default_model": "z-ai/glm-4-9b-chat",
-    "server_api_key": ""
+  "nvidia_url": "https://integrate.api.nvidia.com/v1/chat/completions",
+  "nvidia_keys": [
+    "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"
+  ],
+  "model_mapping": {},
+  "default_model": "z-ai/glm-4-9b-chat",
+  "server_api_key": null,
+  "port": 3001
 }
